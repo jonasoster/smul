@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <diagram>
+   <elements>
+     <obj label="o1">Object 1 which has a lot to say about itself</obj>
+     <obj label="o2">Object 2</obj>
+     <obj label="o3">A third object which is also very nice</obj>
+   </elements>
+
+   <sequence>
+     <activate label="o1"/>
+     <step/>
+
+     <arrow type="call" from="o1" to="o2">foo()</arrow>
+     <activate label="o2"/>
+     <step/>
+
+     <arrow type="return" from="o2" to="o1"/>
+     <deactivate label="o2"/>
+     <step/>
+
+     <deactivate label="o1"/>
+     <step/>
+   </sequence>
+ </diagram>
