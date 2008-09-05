@@ -1,0 +1,7 @@
+#summary List of things to do
+
+= To Do =
+
+  * Support multiple activations per life line
+  * PNG export
+  * Reload button in graphical mode
