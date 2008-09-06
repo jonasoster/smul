@@ -23,11 +23,15 @@ public class SeqObj
 
 public class Step : SeqObj
 {
+    public List<Arrow> arrows;
+    public List<Activation> activations;
     public int amount;
-    public Step(int amount)
+
+    public Step()
     {
-        this.amount = amount;
-//         Console.WriteLine("Step");
+        amount = 0;
+        activations = new List<Activation>();
+        arrows = new List<Arrow>();
     }
 }
 
@@ -66,11 +70,11 @@ public class Arrow : SeqObj
 public class Diagram
 {
     public List<ElemObj> elements;
-    public List<SeqObj> sequence;
+    public List<Step> sequence;
 
     public Diagram()
     {
         elements = new List<ElemObj>();
-        sequence = new List<SeqObj>();
+        sequence = new List<Step>();
     }
 }
