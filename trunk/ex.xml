@@ -18,7 +18,14 @@
      <deactivate label="o2"/>
      <step/>
 
-     <deactivate label="o1"/>
+     <arrow type="call" from="o1" to="o3">bar()</arrow>
+     <activate label="o3"/>
      <step/>
+     
+     <arrow type="return" from="o3" to="o1">quux</arrow>
+     <deactivate label="o3"/>
+     
+     <step/>
+     <deactivate label="o1"/>
    </sequence>
  </diagram>

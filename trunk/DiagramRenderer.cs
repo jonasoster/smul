@@ -68,6 +68,14 @@ public class DiagramRenderer
                 }
             }
         }
+
+        public double XClearLeft {
+            get { return x - 3; }
+        }
+
+        public double XClearRight {
+            get { return x + 3; }
+        }
         
         public LifeLine(string label, DiagramRenderer dr, double x, double y0)
         {
@@ -162,35 +170,10 @@ public class DiagramRenderer
 
         YCurrent += y_step;
 
-        foreach(SeqObj seqobj in diagram.sequence)
+        foreach(Step step in diagram.sequence)
         {
-            // Todo: learn the visitor pattern
-            if(seqobj is Arrow)
+            foreach(Activation a in step.activations)
             {
-                Arrow arrow = (Arrow)seqobj;
-                TextArrow ta = new TextArrow();
-                LifeLine to = llDict[arrow.to];
-                LifeLine from = llDict[arrow.from];
-                bool right = to.X > from.X;
-                ta.Y0 = YCurrent;
-                if(right)
-                {
-                    ta.X0 = from.XRight;
-                    ta.X1 = to.XLeft;
-                }
-                else
-                {
-                    ta.X0 = from.XLeft;
-                    ta.X1 = to.XRight;
-                }
-                ta.Text = arrow.text;
-                ta.ArrowKind = arrow.type;
-                ta.Layout(cr);
-                items.Add(ta);
-            }
-            else if(seqobj is Activation)
-            {
-                Activation a = (Activation)seqobj;
                 LifeLine ll = llDict[a.label];
 
                 if(a.on)
@@ -202,19 +185,39 @@ public class DiagramRenderer
                     ll.Deactivate();
                 }
             }
-            else
-                if(seqobj is Step)
-            {
-                Step step = (Step)seqobj;
 
-                if(step.amount == 0)
+            foreach(Arrow arrow in step.arrows)
+            {
+                TextArrow ta = new TextArrow();
+                LifeLine to = llDict[arrow.to];
+                LifeLine from = llDict[arrow.from];
+                bool right = to.X > from.X;
+                ta.Y0 = YCurrent;
+                if(right)
                 {
-                    YCurrent += y_step;                
+                    ta.X0 = from.XRight;
+                    ta.X1 = to.XLeft;
+                    ta.XText = from.XClearRight;
                 }
                 else
                 {
-                    YCurrent += step.amount;
+                    ta.X0 = from.XLeft;
+                    ta.X1 = to.XRight;
+                    ta.XText = from.XClearLeft;
                 }
+                ta.Text = arrow.text;
+                ta.ArrowKind = arrow.type;
+                ta.Layout(cr);
+                items.Add(ta);
+            }
+
+            if(step.amount == 0)
+            {
+                YCurrent += y_step;                
+            }
+            else
+            {
+                YCurrent += step.amount;
             }
         }
 

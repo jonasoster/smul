@@ -60,10 +60,57 @@ public class DiagramBuilder
 
     void SequenceFromNode(XmlNode node)
     {
+        Step currentStep = new Step();
         foreach(XmlNode child in node.ChildNodes)
         {
-            diagram.sequence.Add(SeqObjFromNode(child));
+            if(child.Name.Equals("activate"))
+            {
+                currentStep.activations.Add(new Activation(
+                        child.Attributes["label"].Value, true));
+            }
+            else if(child.Name.Equals("deactivate"))
+            {
+                currentStep.activations.Add(new Activation(
+                        child.Attributes["label"].Value, false));
+            }
+            else if(child.Name.Equals("arrow"))
+            {
+                ArrowKind type =
+                    ArrowKindFromString(child.Attributes["type"].Value);
+                string text;
+
+                if(child.ChildNodes.Count != 0)
+                {
+                    text = child.ChildNodes[0].Value;
+                }
+                else
+                {
+                    text = "";
+                }
+            
+                currentStep.arrows.Add(new Arrow(
+                        child.Attributes["from"].Value,
+                        child.Attributes["to"].Value,
+                        type,
+                        text));                
+            }
+            else if(child.Name.Equals("step"))
+            {
+                if((child.Attributes == null) || (child.Attributes["amount"] == null))
+                {
+                }
+                else
+                {
+                    int amount = System.Int32.Parse(child.Attributes["amount"].Value);
+                    currentStep.amount = amount;
+                }
+
+                diagram.sequence.Add(currentStep);
+                currentStep = new Step();
+            }
         }
+
+        diagram.sequence.Add(currentStep);
     }
 
     ElemObj ElemObjFromNode(XmlNode node)
@@ -75,58 +122,6 @@ public class DiagramBuilder
         return new ElemObj(
             node.Attributes["label"].Value,
             node.ChildNodes[0].Value);
-    }
-
-    SeqObj SeqObjFromNode(XmlNode node)
-    {
-        if(node.Name.Equals("step"))
-        {
-            if((node.Attributes == null) || (node.Attributes["amount"] == null))
-            {
-                return new Step(0);
-            }
-            else
-            {
-                int amount = System.Int32.Parse(node.Attributes["amount"].Value);
-                return new Step(amount);
-            }
-        }
-        else if(node.Name.Equals("activate"))
-        {
-            return new Activation(
-                node.Attributes["label"].Value, true);
-        }
-        else if(node.Name.Equals("deactivate"))
-        {
-            return new Activation(
-                node.Attributes["label"].Value, false);
-        }
-        else if(node.Name.Equals("arrow"))
-        {
-            ArrowKind type =
-                ArrowKindFromString(node.Attributes["type"].Value);
-            string text;
-
-            if(node.ChildNodes.Count != 0)
-            {
-                text = node.ChildNodes[0].Value;
-            }
-            else
-            {
-                text = "";
-            }
-            
-            return new Arrow(
-                node.Attributes["from"].Value,
-                node.Attributes["to"].Value,
-                type,
-                text);                
-        }
-        else
-        {
-            Assert(false);
-            return null;
-        }
     }
 
     ArrowKind ArrowKindFromString(string name)

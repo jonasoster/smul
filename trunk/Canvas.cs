@@ -136,6 +136,12 @@ public class TextArrow : CanvasItem
         set { arrow_kind = value; }
     }
 
+    private double x_text;
+    public double XText {
+        get { return x_text; }
+        set { x_text = value; }
+    }
+
     override public void Layout(Cairo.Context cr)
     {
         Y1 = Y0;
@@ -175,13 +181,13 @@ public class TextArrow : CanvasItem
         {
             if(dir > 0)
             {
-                cr.MoveTo(X0 + 5, Y0 - 5);
+                cr.MoveTo(XText + 5, Y0 - 5);
                 cr.ShowText(text);
             }
             else
             {
                 TextExtents te = cr.TextExtents(text);
-                cr.MoveTo(X0 - 5 - te.Width, Y0 - 5);
+                cr.MoveTo(XText - 5 - te.Width, Y0 - 5);
                 cr.ShowText(text);
             }
         }
