@@ -91,7 +91,7 @@ public class TextBox : CanvasItem
     override public void Layout(Cairo.Context cr)
     {
         layout = Pango.CairoHelper.CreateLayout(cr);
-        Pango.FontDescription desc = Pango.FontDescription.FromString("sans 6");
+        Pango.FontDescription desc = Pango.FontDescription.FromString("sans 7");
         layout.FontDescription = desc;
         layout.SetText(Text);
         layout.Width = (int)(Pango.Scale.PangoScale*(Width - 2*BorderWidth));
@@ -153,7 +153,7 @@ public class TextArrow : CanvasItem
 
         cr.Save();
 
-        cr.SetFontSize(6);
+        cr.SetFontSize(8);
         if(arrow_kind == ArrowKind.Return)
         {
             double[] returnDash = new double[]{ 3.0, 3.0 };
@@ -211,7 +211,7 @@ public class SelfTextArrow : TextArrow
     {
         cr.Save();
 
-        cr.SetFontSize(6);
+        cr.SetFontSize(8);
         if(ArrowKind == ArrowKind.Return)
         {
             double[] returnDash = new double[]{ 3.0, 3.0 };
