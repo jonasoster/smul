@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+ <diagram>
+   <elements>
+     <obj label="o1">obj: Object</obj>
+   </elements>
+
+   <sequence>
+     <activate label="o1"/>
+     <step/>
+
+     <arrow type="call" from="o1" to="o1">foo()</arrow>
+     <activate label="o1"/>
+     <step/>
+     <deactivate label="o1"/>
+     <step/>
+     <deactivate label="o1"/>
+   </sequence>
+ </diagram>
