@@ -39,14 +39,14 @@ public class DiagramRenderer
         double y0, y1;
         DiagramRenderer dr;
         List<CanvasItem> boxes;
-        Box box;
+        Stack<Box> activeBoxes;
 
         public double XLeft {
             get
             {
-                if(box != null)
+                if(activeBoxes.Count != 0)
                 {
-                    return box.X0;
+                    return activeBoxes.Peek().X0;
                 }
                 else
                 {
@@ -58,9 +58,9 @@ public class DiagramRenderer
         public double XRight {
             get
             {
-                if(box != null)
+                if(activeBoxes.Count != 0)
                 {
-                    return box.X1;
+                    return activeBoxes.Peek().X1;
                 }
                 else
                 {
@@ -74,7 +74,17 @@ public class DiagramRenderer
         }
 
         public double XClearRight {
-            get { return x + 3; }
+            get
+            {
+                if(activeBoxes.Count != 0)
+                {
+                    return activeBoxes.Peek().X1;
+                }
+                else
+                {
+                    return x;
+                }
+            }
         }
         
         public LifeLine(string label, DiagramRenderer dr, double x, double y0)
@@ -84,32 +94,32 @@ public class DiagramRenderer
             this.x = x;
             this.y0 = y0;
             boxes = new List<CanvasItem>();
-//             Console.WriteLine("ll {0} {1} {2}",
-//                 label, x, y0);
+            activeBoxes = new Stack<Box>();
         }
 
         public void Activate()
         {
-            box = new Box();
+            Box box = new Box();
             box.Y0 = dr.YCurrent;
-            box.X0 = X - 3;
-            box.X1 = X + 3;
+            box.X0 = XRight - 3;
+            box.X1 = XRight + 3;
+            activeBoxes.Push(box);
         }
 
         public void Deactivate()
         {
-            if(box != null)
+            if(activeBoxes.Count != 0)
             {
+                Box box = activeBoxes.Pop();
                 box.Y1 = dr.YCurrent;
                 boxes.Add(box);
-                box = null;
             }
         }
         
         public void End()
         {
             y1 = dr.YCurrent;
-
+            boxes.Reverse();
 //             Console.WriteLine("ll {0} {1}",
 //                 label, y1);
         }
@@ -140,7 +150,7 @@ public class DiagramRenderer
         lifeLines = new List<LifeLine>();
         Dictionary<string, LifeLine> llDict = new Dictionary<string, LifeLine>();
         double x_where = 50.5;
-        double y_step = 20;
+        double y_step = 25;
         y_current = 0;
 
         width = 0;
@@ -172,6 +182,11 @@ public class DiagramRenderer
 
         foreach(Step step in diagram.sequence)
         {
+            if(step.amount == 0)
+            {
+                step.amount = (int)y_step;
+            }
+            
             foreach(Activation a in step.activations)
             {
                 LifeLine ll = llDict[a.label];
@@ -188,37 +203,47 @@ public class DiagramRenderer
 
             foreach(Arrow arrow in step.arrows)
             {
-                TextArrow ta = new TextArrow();
+                TextArrow ta;
                 LifeLine to = llDict[arrow.to];
                 LifeLine from = llDict[arrow.from];
-                bool right = to.X > from.X;
-                ta.Y0 = YCurrent;
-                if(right)
+
+                if(to != from)
                 {
-                    ta.X0 = from.XRight;
-                    ta.X1 = to.XLeft;
-                    ta.XText = from.XClearRight;
+                    ta = new TextArrow();
+                    bool right = to.X > from.X;
+                    ta.Y0 = YCurrent;
+                    if(right)
+                    {
+                        ta.X0 = from.XRight;
+                        ta.X1 = to.XLeft;
+                        ta.XText = from.XClearRight;
+                    }
+                    else
+                    {
+                        ta.X0 = from.XLeft;
+                        ta.X1 = to.XRight;
+                        ta.XText = from.XClearLeft;
+                    }
                 }
                 else
                 {
-                    ta.X0 = from.XLeft;
-                    ta.X1 = to.XRight;
-                    ta.XText = from.XClearLeft;
+                    SelfTextArrow sta = new SelfTextArrow();
+                    sta.Y0 = YCurrent - 10;
+                    sta.Y1 = YCurrent;
+                    sta.X0 = from.XRight;
+                    sta.X0b = from.XRight;
+                    sta.X1 = from.XRight + 30;
+                    sta.XText = from.XClearRight;
+                    ta = sta;
                 }
+
                 ta.Text = arrow.text;
                 ta.ArrowKind = arrow.type;
                 ta.Layout(cr);
                 items.Add(ta);
             }
 
-            if(step.amount == 0)
-            {
-                YCurrent += y_step;                
-            }
-            else
-            {
-                YCurrent += step.amount;
-            }
+            YCurrent += step.amount;
         }
 
         foreach(LifeLine ll in lifeLines)

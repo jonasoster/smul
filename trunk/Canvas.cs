@@ -194,3 +194,54 @@ public class TextArrow : CanvasItem
         cr.Restore();
     }
 }
+
+public class SelfTextArrow : TextArrow
+{
+    private double x0b;
+    public double X0b {
+        get { return x0b; }
+        set { x0b = value; }
+    }
+        
+    override public void Layout(Cairo.Context cr)
+    {
+    }
+
+    override public void Draw(Cairo.Context cr)
+    {
+        cr.Save();
+
+        cr.SetFontSize(6);
+        if(ArrowKind == ArrowKind.Return)
+        {
+            double[] returnDash = new double[]{ 3.0, 3.0 };
+            cr.SetDash(returnDash, 0);
+        }
+        
+        cr.MoveTo(X0, Y0);
+        cr.LineTo(X1, Y0);
+        cr.LineTo(X1, Y1);
+        cr.LineTo(X0b, Y1);
+        cr.Stroke();
+
+        cr.MoveTo(X0b + 7, Y1 - 3);
+        cr.LineTo(X0b, Y1);
+        cr.LineTo(X0b + 7, Y1 + 3);
+        if(ArrowKind == ArrowKind.Async)
+        {
+            cr.Stroke();
+        }
+        else
+        {
+            cr.MoveTo(X0b + 7, Y1 - 3);
+            cr.Fill();
+        }
+
+        if((Text != null) && !Text.Equals(""))
+        {
+            cr.MoveTo(XText + 5, Y0 - 5);
+            cr.ShowText(Text);
+        }
+        cr.Restore();
+    }
+}
