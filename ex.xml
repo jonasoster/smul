@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
  <diagram>
    <elements>
-     <obj label="o1">Object 1 which has a lot to say about itself</obj>
-     <obj label="o2">Object 2</obj>
-     <obj label="o3">A third object which is also very nice</obj>
+     <obj label="o1">object1: Class</obj>
+     <obj label="o2">object2: AnotherClass</obj>
+     <obj label="o3">object3: DifferentClass</obj>
    </elements>
 
    <sequence>
@@ -21,11 +21,22 @@
      <arrow type="call" from="o1" to="o3">bar()</arrow>
      <activate label="o3"/>
      <step/>
+
+     <arrow type="call" from="o3" to="o3">makeAWish()</arrow>
+     <step/>
+
+     <arrow type="call" from="o3" to="o3">baz()</arrow>
+     <activate label="o3"/>
+     <step/>
      
+     <deactivate label="o3"/>
+     <step/>
+
      <arrow type="return" from="o3" to="o1">quux</arrow>
      <deactivate label="o3"/>
+     <step amount="10"/>
      
-     <step/>
      <deactivate label="o1"/>
+     <step/>
    </sequence>
  </diagram>

@@ -41,31 +41,47 @@ public class DiagramRenderer
         List<CanvasItem> boxes;
         Stack<Box> activeBoxes;
 
-        public double XLeft {
-            get
+        private double x_left_before;
+        public double XLeftBefore {
+            get { return x_left_before; }
+        }
+
+        private double x_left_after;
+        public double XLeftAfter {
+            get { return x_left_after; }
+        }
+
+        private double x_right_before;
+        public double XRightBefore {
+            get { return x_right_before; }
+        }
+
+        private double x_right_after;
+        public double XRightAfter {
+            get { return x_right_after; }
+        }
+        
+        double GetXLeft()
+        {
+            if(activeBoxes.Count != 0)
             {
-                if(activeBoxes.Count != 0)
-                {
-                    return activeBoxes.Peek().X0;
-                }
-                else
-                {
-                    return x;
-                }
+                return activeBoxes.Peek().X0;
+            }
+            else
+            {
+                return x;
             }
         }
 
-        public double XRight {
-            get
+        double GetXRight()
+        {
+            if(activeBoxes.Count != 0)
             {
-                if(activeBoxes.Count != 0)
-                {
-                    return activeBoxes.Peek().X1;
-                }
-                else
-                {
-                    return x;
-                }
+                return activeBoxes.Peek().X1;
+            }
+            else
+            {
+                return x;
             }
         }
 
@@ -74,17 +90,7 @@ public class DiagramRenderer
         }
 
         public double XClearRight {
-            get
-            {
-                if(activeBoxes.Count != 0)
-                {
-                    return activeBoxes.Peek().X1;
-                }
-                else
-                {
-                    return x;
-                }
-            }
+            get { return GetXRight(); }
         }
         
         public LifeLine(string label, DiagramRenderer dr, double x, double y0)
@@ -101,8 +107,8 @@ public class DiagramRenderer
         {
             Box box = new Box();
             box.Y0 = dr.YCurrent;
-            box.X0 = XRight - 3;
-            box.X1 = XRight + 3;
+            box.X0 = GetXRight() - 3;
+            box.X1 = GetXRight() + 3;
             activeBoxes.Push(box);
         }
 
@@ -114,6 +120,18 @@ public class DiagramRenderer
                 box.Y1 = dr.YCurrent;
                 boxes.Add(box);
             }
+        }
+
+        public void BeforeActivations()
+        {
+            x_right_before = GetXRight();
+            x_left_before = GetXLeft();
+        }
+
+        public void AfterActivations()
+        {
+            x_right_after = GetXRight();
+            x_left_after = GetXLeft();
         }
         
         public void End()
@@ -178,15 +196,20 @@ public class DiagramRenderer
             }
         }
 
-        YCurrent += y_step;
-
         foreach(Step step in diagram.sequence)
         {
             if(step.amount == 0)
             {
                 step.amount = (int)y_step;
             }
-            
+
+            YCurrent += step.amount;
+
+            foreach(LifeLine ll in lifeLines)
+            {
+                ll.BeforeActivations();
+            }
+
             foreach(Activation a in step.activations)
             {
                 LifeLine ll = llDict[a.label];
@@ -199,6 +222,11 @@ public class DiagramRenderer
                 {
                     ll.Deactivate();
                 }
+            }
+
+            foreach(LifeLine ll in lifeLines)
+            {
+                ll.AfterActivations();
             }
 
             foreach(Arrow arrow in step.arrows)
@@ -214,14 +242,14 @@ public class DiagramRenderer
                     ta.Y0 = YCurrent;
                     if(right)
                     {
-                        ta.X0 = from.XRight;
-                        ta.X1 = to.XLeft;
+                        ta.X0 = from.XRightAfter;
+                        ta.X1 = to.XLeftAfter;
                         ta.XText = from.XClearRight;
                     }
                     else
                     {
-                        ta.X0 = from.XLeft;
-                        ta.X1 = to.XRight;
+                        ta.X0 = from.XLeftAfter;
+                        ta.X1 = to.XRightAfter;
                         ta.XText = from.XClearLeft;
                     }
                 }
@@ -230,9 +258,9 @@ public class DiagramRenderer
                     SelfTextArrow sta = new SelfTextArrow();
                     sta.Y0 = YCurrent - 10;
                     sta.Y1 = YCurrent;
-                    sta.X0 = from.XRight;
-                    sta.X0b = from.XRight;
-                    sta.X1 = from.XRight + 30;
+                    sta.X0 = from.XRightBefore;
+                    sta.X0b = from.XRightAfter;
+                    sta.X1 = from.XRightBefore + 30;
                     sta.XText = from.XClearRight;
                     ta = sta;
                 }
@@ -242,8 +270,6 @@ public class DiagramRenderer
                 ta.Layout(cr);
                 items.Add(ta);
             }
-
-            YCurrent += step.amount;
         }
 
         foreach(LifeLine ll in lifeLines)
