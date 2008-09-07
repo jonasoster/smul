@@ -2,6 +2,5 @@
 
 = To Do =
 
-  * Support multiple activations per life line
   * PNG export
-  * Reload button in graphical mode
+  * UML 2.0 combination fragments
