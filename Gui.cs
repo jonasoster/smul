@@ -61,6 +61,7 @@ class DiagramWin : Window
 {
     string fileName;
     DiagramArea da;
+    bool auto_reload = true;
     
     MenuBar CreateMenuBar()
     {
@@ -85,7 +86,12 @@ class DiagramWin : Window
         item = new MenuItem("_Reload");
         item.Activated += OnReload;
         viewMenu.Append(item);
-        
+
+        CheckMenuItem cmi = new CheckMenuItem("_Automatic reload");
+        cmi.Active = true;
+        cmi.Toggled += OnToggleAuto;
+        viewMenu.Append(cmi);
+
         return mb;
     }
     
@@ -104,8 +110,32 @@ class DiagramWin : Window
         v.PackStart(da, true, true, 0);
         Add(v);
         ShowAll();
+        WatchFile();
     }
 
+    void WatchFile()
+    {
+        string fullPath = System.IO.Path.GetFullPath(fileName);
+        string dirName = System.IO.Path.GetDirectoryName(fullPath);
+        string baseName = System.IO.Path.GetFileName(fullPath);
+        FileSystemWatcher fsw = new FileSystemWatcher(dirName);
+        fsw.Filter = baseName;
+
+        fsw.Changed += OnFileChanged;
+        fsw.EnableRaisingEvents = true;
+    }
+
+    void OnToggleAuto(object o, EventArgs e)
+    {
+        auto_reload = !auto_reload;
+    }
+    
+    void OnFileChanged(object o, FileSystemEventArgs e)
+    {
+        // Do the work in the Gtk main loop thread
+        GLib.Idle.Add(new GLib.IdleHandler(FileChangedIdleHandler));
+    }
+    
     void OnQuit(object sender, DeleteEventArgs e)
     {
         Application.Quit();
@@ -116,9 +146,23 @@ class DiagramWin : Window
         Application.Quit();
     }
 
-    void OnReload(object o, EventArgs e)
+    void Reload()
     {
         Diagram diagram = Program.Load(fileName);
         da.Diagram = diagram;
+    }
+
+    bool FileChangedIdleHandler()
+    {
+        if(auto_reload)
+        {
+            Reload();
+        }
+        return false;
+    }
+    
+    void OnReload(object o, EventArgs e)
+    {
+        Reload();
     }
 }
