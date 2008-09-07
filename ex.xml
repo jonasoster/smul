@@ -22,7 +22,7 @@
      <activate label="o3"/>
      <step/>
 
-     <arrow type="call" from="o3" to="o3">makeAWish()</arrow>
+     <arrow type="call" from="o3" to="o3">meep()</arrow>
      <step/>
 
      <arrow type="call" from="o3" to="o3">baz()</arrow>
