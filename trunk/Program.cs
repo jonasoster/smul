@@ -1,79 +1,122 @@
 using System;
 using System.IO;
 using System.Xml;
-using System.Collections.Generic;
 using Cairo;
 using Gtk;
 
-
-class DiagramWin : DrawingArea
+public class PdfWriter
 {
-    Diagram diagram;
-    
-    public DiagramWin (Diagram diagram)
+    public static void Write(string fileName)
     {
-        this.diagram = diagram;
-        Window win = new Window ("Smul");
-        win.SetDefaultSize (595, 400);
-        win.DeleteEvent += new DeleteEventHandler (OnQuit);
-        win.Add (this);
-        win.ShowAll ();
-    }
-    
-    void Draw (Context cr, int width, int height)
-    {
-        DiagramRenderer dr = new DiagramRenderer(cr, width, height, diagram);
-        
-        cr.LineWidth = 1.0;
-        cr.Color = new Color(1.0, 1.0, 1.0);
-        cr.Rectangle(0, 0, width, height);
-        cr.Fill();
-            
-        cr.Color = new Color(0.0, 0.0, 0.0);
-        dr.Render();
-        dr.Draw();
-    }
+        Diagram diagram = Program.Load(fileName);
+        string pdfName = System.IO.Path.ChangeExtension(fileName, "pdf");
 
-    protected override bool OnExposeEvent (Gdk.EventExpose e)
-    {
-        using(Context cr = Gdk.CairoHelper.Create (e.Window))
+        if(diagram != null)
         {
-            int w, h;
-            e.Window.GetSize (out w, out h);
-            Draw (cr, w, h);
-        }
-        return true;
-    }
+            try
+            {
+                using(PdfSurface pdfs = new PdfSurface(pdfName, 595, 842))
+                {
+                    using(Context cr = new Context(pdfs))
+                    {
+                        DiagramRenderer dr = new DiagramRenderer(cr, 0, 0, diagram);
+        
+                        cr.LineWidth = 1.0;
+                        cr.Color = new Color(0.0, 0.0, 0.0);
+                        dr.Render();
+                        pdfs.SetSize(dr.width, dr.height);                            
+                        dr.Draw();
 
-    void OnQuit (object sender, DeleteEventArgs e)
+                        cr.ShowPage();
+                    }
+                }
+
+                Console.WriteLine("Wrote {0}", pdfName);
+            }
+            catch
+            {
+                Console.WriteLine("Error writing {0}", pdfName);
+            }
+        }
+    }
+}
+
+public class PsWriter
+{
+    public static void Write(string fileName)
     {
-        Application.Quit ();
+        Diagram diagram = Program.Load(fileName);
+        string psName = System.IO.Path.ChangeExtension(fileName, "ps");
+
+        if(diagram != null)
+        {
+            try
+            {
+                // It seems the page size cannot be made smaller
+                // using SetSize(), only larger. Start with a
+                // small surface and enlarge it after layout.
+                using(PSSurface pss = new PSSurface(psName, 10, 10))
+                {
+                    using(Context cr = new Context(pss))
+                    {
+                        DiagramRenderer dr = new DiagramRenderer(cr, 0, 0, diagram);
+        
+                        cr.LineWidth = 1.0;
+                        cr.Color = new Color(0.0, 0.0, 0.0);
+                        dr.Render();
+                        pss.SetSize(dr.width, dr.height);                            
+                        dr.Draw();
+
+                        cr.ShowPage();
+                    }
+                }
+
+                Console.WriteLine("Wrote {0}", psName);
+            }
+            catch
+            {
+                Console.WriteLine("Error writing {0}", psName);
+            }
+        }
     }
 }
 
 public class Program
 {
-    bool graphical = false;
+    bool graphical = true;
     bool pdf = false;
     bool ps = false;
     string file_name;
-    Diagram diagram;
+
+    public static Diagram Load(string file_name)
+    {
+        DiagramBuilder db = new DiagramBuilder();
+
+        try
+        {
+            return db.Build(file_name);
+        }
+        catch
+        {
+            Console.WriteLine("Could not parse {0} as diagram definition", file_name);
+        }
+
+        return null;
+    }
     
     Program(string[] args)
     {
         foreach(string arg in args)
         {
-            if(arg.Equals("-graphical"))
-            {
-                graphical = true;
-            }
-            else if(arg.Equals("-pdf"))
+            if(arg.Equals("-pdf"))
             {
                 pdf = true;
+                graphical = false;
             }
             else if(arg.Equals("-ps"))
             {
                 ps = true;
+                graphical = false;
             }
             else
             {
@@ -83,70 +126,21 @@ public class Program
 
         if(file_name != null)
         {
-            DiagramBuilder db = new DiagramBuilder();
-
-            try
+            if(pdf)
             {
-                diagram = db.Build(file_name);
-            }
-            catch
-            {
-                Console.WriteLine("Could not parse {0} as diagram definition", file_name);
+                PdfWriter.Write(file_name);
             }
 
-            if(diagram != null)
+            if(ps)
             {
-                if(pdf)
-                {
-                    string pdfName = System.IO.Path.ChangeExtension(file_name, "pdf");
-                    
-                    using(PdfSurface pdfs = new PdfSurface(pdfName, 595, 842))
-                    {
-                        using(Context cr = new Context(pdfs))
-                        {
-                            DiagramRenderer dr = new DiagramRenderer(cr, 0, 0, diagram);
-        
-                            cr.LineWidth = 1.0;
-                            cr.Color = new Color(0.0, 0.0, 0.0);
-                            dr.Render();
-                            pdfs.SetSize(dr.width, dr.height);                            
-                            dr.Draw();
+                PsWriter.Write(file_name);
+            }
 
-                            cr.ShowPage();
-                        }
-                    }
-                }
-
-                if(ps)
-                {
-                    string psName = System.IO.Path.ChangeExtension(file_name, "ps");
-
-                    // It seems the page size cannot be made smaller
-                    // using SetSize(), only larger. Start with a
-                    // small surface and enlarge it after layout.
-                    using(PSSurface pss = new PSSurface(psName, 10, 10))
-                    {
-                        using(Context cr = new Context(pss))
-                        {
-                            DiagramRenderer dr = new DiagramRenderer(cr, 0, 0, diagram);
-        
-                            cr.LineWidth = 1.0;
-                            cr.Color = new Color(0.0, 0.0, 0.0);
-                            dr.Render();
-                            pss.SetSize(dr.width, dr.height);                            
-                            dr.Draw();
-
-                            cr.ShowPage();
-                        }
-                    }
-                }
-
-                if(graphical)
-                {
-                    Application.Init ();
-                    new DiagramWin(diagram);
-                    Application.Run ();
-                }
+            if(graphical)
+            {
+                Application.Init ();
+                new DiagramWin(file_name);
+                Application.Run ();
             }
         }
     }
