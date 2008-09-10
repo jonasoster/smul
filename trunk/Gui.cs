@@ -21,6 +21,16 @@ class DiagramArea : DrawingArea
     public int ErrorCounter {
         get { return error_counter; }
     }
+
+    private double scale_factor = 2.0;
+    public double ScaleFactor {
+        get { return scale_factor; }
+        set
+        {
+            scale_factor = value;
+            QueueDraw();
+        }
+    }
     
     void Draw (Context cr, int width, int height)
     {
@@ -29,6 +39,8 @@ class DiagramArea : DrawingArea
         cr.Rectangle(0, 0, width, height);
         cr.Fill();
 
+        cr.Save();
+        cr.Scale(scale_factor, scale_factor);
         try
         {
             if(diagram != null)
@@ -43,6 +55,7 @@ class DiagramArea : DrawingArea
         {
             error_counter++;
         }
+        cr.Restore();
     }
 
     protected override bool OnExposeEvent (Gdk.EventExpose e)
@@ -83,7 +96,15 @@ class DiagramWin : Window
         item.Submenu = viewMenu;
         mb.Append(item);
 
-        item = new MenuItem("_Reload");
+        item = new ImageMenuItem(Stock.ZoomIn, agrp);
+        item.Activated += OnZoomIn;
+        viewMenu.Append(item);
+
+        item = new ImageMenuItem(Stock.ZoomOut, agrp);
+        item.Activated += OnZoomOut;
+        viewMenu.Append(item);
+
+        item = new ImageMenuItem(Stock.Refresh, agrp);
         item.Activated += OnReload;
         viewMenu.Append(item);
 
@@ -123,6 +144,16 @@ class DiagramWin : Window
 
         fsw.Changed += OnFileChanged;
         fsw.EnableRaisingEvents = true;
+    }
+
+    void OnZoomIn(object o, EventArgs e)
+    {
+        da.ScaleFactor *= 1.2;
+    }
+
+    void OnZoomOut(object o, EventArgs e)
+    {
+        da.ScaleFactor /= 1.2;
     }
 
     void OnToggleAuto(object o, EventArgs e)
