@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
  <diagram>
    <elements>
-     <obj label="o1">object1: Class</obj>
-     <obj label="o2">object2: AnotherClass</obj>
-     <obj label="o3">object3: DifferentClass</obj>
+     <obj label="o1"><u>object1: Class</u></obj>
+     <obj label="o2"><u>object2: AnotherClass</u></obj>
+     <obj label="o3"><u>object3: DifferentClass</u></obj>
    </elements>
 
    <sequence>
