@@ -93,7 +93,7 @@ public class TextBox : CanvasItem
         layout = Pango.CairoHelper.CreateLayout(cr);
         Pango.FontDescription desc = Pango.FontDescription.FromString("sans 7");
         layout.FontDescription = desc;
-        layout.SetText(Text);
+        layout.SetMarkup(Text);
         layout.Width = (int)(Pango.Scale.PangoScale*(Width - 2*BorderWidth));
         layout.Alignment = Pango.Alignment.Center;
 

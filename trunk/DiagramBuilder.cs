@@ -119,9 +119,11 @@ public class DiagramBuilder
         Assert(node.Attributes["label"] != null);
         Assert(!node.Attributes["label"].Value.Equals(""));
 
+        Console.WriteLine("InnerText: {0}", node.InnerXml);
+        
         return new ElemObj(
             node.Attributes["label"].Value,
-            node.ChildNodes[0].Value);
+            node.InnerXml);
     }
 
     ArrowKind ArrowKindFromString(string name)
