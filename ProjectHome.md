@@ -1,0 +1,1 @@
+Smul is a command line tool which creates a UML sequence diagram from a description in a simple XML format. It can generate PDF or Postscript files and also has a graphical mode.
